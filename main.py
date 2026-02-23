@@ -140,8 +140,8 @@ def main():
 
     api_key = get_api_key()
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel("gemini-3.1-pro")
-    print(f"  Model: Gemini 3.1 Pro\n")
+    model = genai.GenerativeModel("gemini-3.1-pro-preview")
+    print(f"  Model: Gemini 3.1 Pro Preview\n")
 
     # Load contacts
     df, dynamic_cols = load_contacts(args.input, config)

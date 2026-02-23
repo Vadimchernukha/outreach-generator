@@ -6,7 +6,7 @@
 
 client_name: "Your Company Name"
 language: "English"          # or "Russian", "German", etc.
-gemini_model: "gemini-3.1-pro"
+gemini_model: "gemini-3.1-pro-preview"
 delay_seconds: 4
 
 # ── Company context injected into every prompt ──

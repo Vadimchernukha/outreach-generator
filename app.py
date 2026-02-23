@@ -167,7 +167,7 @@ def main():
         # Initialize API
         api_key = get_api_key()
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel("gemini-3.1-pro")
+        model = genai.GenerativeModel("gemini-3.1-pro-preview")
 
         # Load contacts
         try:
