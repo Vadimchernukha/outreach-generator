@@ -127,7 +127,7 @@ def process_contact(model, row, dynamic_cols: list, config: dict, delay: float, 
 # ─── Main UI ──────────────────────────────────────────
 def main():
     st.title("📧 AI Cold Outreach Generator")
-    st.markdown("Powered by Google Gemini 1.5 Pro")
+    st.markdown("Powered by Google Gemini 3.1 Pro")
 
     # Sidebar
     with st.sidebar:
@@ -167,7 +167,7 @@ def main():
         # Initialize API
         api_key = get_api_key()
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel("gemini-1.5-pro")
+        model = genai.GenerativeModel("gemini-3.1-pro")
 
         # Load contacts
         try:
