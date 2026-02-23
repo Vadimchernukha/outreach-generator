@@ -1,0 +1,57 @@
+# ╔══════════════════════════════════════════════════╗
+# ║      CLIENT CONFIG — ШАБЛОН ДЛЯ НОВОГО КЛИЕНТА  ║
+# ╚══════════════════════════════════════════════════╝
+#
+# Скопируй этот файл, переименуй и заполни под своего клиента.
+# Запуск: python main.py --client example_client --input contacts.csv
+
+company_name: "Название компании клиента"
+website: "example.com"
+language: "english"   # english / russian / ukrainian / etc.
+
+company_context: |
+  Company: Название компании
+  Type: Чем занимается
+  Founded: Год основания
+  Team: Размер команды
+  Clients: Количество клиентов
+  
+  Core Services:
+  - Услуга 1
+  - Услуга 2
+  
+  Key differentiators:
+  - Главное преимущество 1
+  - Главное преимущество 2
+
+tone_instructions: |
+  - Опиши желаемый тон
+  - Например: формальный / неформальный
+  - Что категорически избегать
+
+funnel:
+  num_messages: 5
+  goal: "Цель воронки — например: забронировать звонок"
+  message_rules: |
+    - Message 1: Что должно быть в первом сообщении
+    - Messages 2-3: Что в середине воронки
+    - Messages 4-5: Финальный CTA
+  timing:
+    - "Day 1"
+    - "Day 3"
+    - "Day 7"
+    - "Day 12"
+    - "Day 18"
+
+# Маппинг CSV колонок под этого клиента
+csv_mapping:
+  person_name:     "Contact Name"      # <- замени на реальное название колонки
+  title:           "Job Title"
+  company_name:    "Company"
+  website:         "Website"
+  industry:        "Industry"
+  company_size:    "Employees"
+  company_country: "Country"
+  company_city:    "City"
+
+boundary_column: "Employees"           # <- колонка после которой идут динамические поля

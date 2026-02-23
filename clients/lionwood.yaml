@@ -1,0 +1,85 @@
+# ╔══════════════════════════════════════════════════╗
+# ║         CLIENT CONFIG — Lionwood Software        ║
+# ╚══════════════════════════════════════════════════╝
+#
+# Чтобы добавить нового клиента:
+# 1. Скопируй этот файл -> clients/новый_клиент.yaml
+# 2. Заполни все поля ниже
+# 3. Запусти: python main.py --client новый_клиент --input contacts.csv
+
+# ─── Основная информация о клиенте ───────────────────
+company_name: "Lionwood Software"
+website: "lionwood.software"
+language: "english"
+
+# ─── Описание компании для ИИ ────────────────────────
+company_context: |
+  Company: Lionwood Software (lionwood.software)
+  Type: Global custom software development company
+  Founded: 2017 (8 years on market)
+  Team: 75 Middle & Senior engineers
+  Clients: 79 worldwide
+  Rating: 4.9/5.0 on Clutch (31 reviews)
+  Cost advantage: Up to 50% reduction vs in-house development
+  Locations: USA, Ukraine, Sweden
+
+  Core Services:
+  - Dedicated Development Teams (staff augmentation)
+  - Custom Web & Mobile App Development (React, Angular, .NET, Flutter, Swift)
+  - AI Development & Integration
+  - UI/UX Design (Figma)
+  - Discovery Phase / MVP for Startups
+  - QA & Testing
+  - Outsource Software Development
+
+  Industries: Logistics, Healthcare, Manufacturing, AgriTech,
+  Retail, Blockchain, Education, Fintech
+
+  Key differentiators:
+  - 4.9 Clutch rating, 31 verified reviews
+  - Up to 50% cost reduction vs in-house hiring
+  - Senior engineers embedded in your team (dedicated model)
+  - Clutch Fastest Growth award winner
+  - Fluent English, proactive async communication
+
+# ─── Тон и стиль ─────────────────────────────────────
+tone_instructions: |
+  - Adapt tone to seniority: technical for CTOs/devs,
+    strategic for CEOs/founders, operational for managers
+  - Conversational and direct — real Telegram style
+  - No corporate buzzwords (leverage, synergies, circle back)
+  - Short sentences, human flow
+
+# ─── Настройки воронки ───────────────────────────────
+funnel:
+  num_messages: 5
+  goal: "Book a discovery call or get a reply"
+  message_rules: |
+    - Message 1: Curiosity hook only, NO pitch yet
+    - Messages 2-3: Build value, relevance, credibility
+    - Messages 4-5: Soft CTA, social proof, or break-up
+    - Messages 1-3: SHORT (2-4 sentences max)
+    - Messages 4-5: Slightly longer but still conversational
+    - Never mention you are an AI
+  timing:
+    - "Day 1"
+    - "Day 3"
+    - "Day 6"
+    - "Day 10"
+    - "Day 14"
+
+# ─── CSV маппинг полей ───────────────────────────────
+# Слева — внутреннее имя (не меняй)
+# Справа — точное название колонки в CSV файле
+csv_mapping:
+  person_name:     "Person name"
+  title:           "title"
+  company_name:    "company name"
+  website:         "website"
+  industry:        "industry"
+  company_size:    "size"
+  company_country: "Company country"
+  company_city:    "Company city"
+
+# Всё что ПОСЛЕ этой колонки = динамические поля компании
+boundary_column: "size"

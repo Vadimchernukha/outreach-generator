@@ -1,0 +1,121 @@
+# ─────────────────────────────────────────────
+#  CLIENT CONFIG TEMPLATE
+#  Duplicate this file, rename it, fill it in.
+#  Run with: python main.py --client yourfilename
+# ─────────────────────────────────────────────
+
+client_name: "Your Company Name"
+language: "English"          # or "Russian", "German", etc.
+gemini_model: "gemini-2.5-pro-preview-06-05"
+delay_seconds: 4
+
+# ── Company context injected into every prompt ──
+company_context: |
+  Company: Your Company Name (yourwebsite.com)
+  Type: What you do in one line
+  Team: X people
+  Clients: X clients
+  Key facts, awards, differentiators...
+
+  Core Services:
+  - Service 1
+  - Service 2
+
+  Industries served:
+  - Industry 1
+  - Industry 2
+
+  Key differentiators:
+  - Why clients choose you
+  - Your unique value prop
+
+# ── CSV column mapping ──
+# Left  = internal key (DO NOT change these keys)
+# Right = exact column name in YOUR CSV file (case-insensitive)
+csv_columns:
+  person_name:     "Contact Name"      # <- change to your CSV column name
+  title:           "Job Title"
+  company_name:    "Company"
+  website:         "Website"
+  industry:        "Industry"
+  company_size:    "Employees"
+  company_country: "Country"
+  company_city:    "City"
+
+# Column name after which everything becomes dynamic company intelligence
+# All columns after this one are passed to AI automatically
+dynamic_fields_after: "Employees"     # <- set to your boundary column
+
+# ── Tone rules by seniority ──
+tone_rules: |
+  - CEO / Founder → strategic, ROI-focused
+  - CTO / VP Engineering → technical, stack-specific
+  - COO / Director → operational, efficiency-focused
+  - Default → professional but conversational
+
+# ── Generation prompt ──
+# Available variables: {client_name}, {company_context}, {tone_rules},
+#   {person_name}, {title}, {company_name}, {website}, {industry},
+#   {company_size}, {company_country}, {company_city}, {dynamic_fields}
+generation_prompt: |
+  You are an expert B2B sales strategist for {client_name}.
+
+  Your task: Write a 5-message cold outreach sequence for Telegram.
+  Goal: start a conversation and eventually book a call or get a reply.
+
+  === ABOUT {client_name} ===
+  {company_context}
+
+  === TONE RULES ===
+  {tone_rules}
+
+  === CONTACT PROFILE ===
+  Name: {person_name}
+  Title: {title}
+  Company: {company_name}
+  Website: {website}
+  Industry: {industry}
+  Size: {company_size}
+  Location: {company_country}, {company_city}
+
+  === COMPANY INTELLIGENCE ===
+  {dynamic_fields}
+
+  === RULES ===
+  - Reference SPECIFIC details from the profile above
+  - Adapt tone to seniority using the tone rules above
+  - NO generic openers
+  - Message 1: curiosity hook only — NO pitch
+  - Messages 2–3: value and credibility
+  - Messages 4–5: soft CTA or break-up
+  - Messages 1–3: max 2–4 sentences
+  - Never reveal you are an AI
+
+  Output ONLY valid JSON, no markdown, no code fences:
+  {
+    "strategy_rationale": "Why this funnel fits this contact",
+    "messages": [
+      {"step": 1, "send_after": "Day 1",  "angle": "...", "text": "..."},
+      {"step": 2, "send_after": "Day 3",  "angle": "...", "text": "..."},
+      {"step": 3, "send_after": "Day 6",  "angle": "...", "text": "..."},
+      {"step": 4, "send_after": "Day 10", "angle": "...", "text": "..."},
+      {"step": 5, "send_after": "Day 14", "angle": "...", "text": "..."}
+    ]
+  }
+
+# ── Humanizer prompt ──
+humanize_prompt: |
+  You are a native {language} speaker texting in Telegram — casual, direct, zero fluff.
+
+  Rewrite the message below so it sounds like a real human, NOT a sales bot:
+  - Keep exact meaning, key facts, and CTA
+  - Short punchy sentences, natural flow
+  - Cut all corporate language
+  - No emojis unless they genuinely fit
+  - Do NOT make it longer
+  - Write in {language}
+
+  Original:
+  {message}
+
+  Return ONLY the rewritten message. No quotes, no labels.
