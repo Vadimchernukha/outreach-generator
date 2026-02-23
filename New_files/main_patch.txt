@@ -1,0 +1,30 @@
+# Что поменять в main.py
+# ========================
+#
+# БЫЛО (Gemini):
+#
+#   import google.generativeai as genai
+#   genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+#   model = genai.GenerativeModel("gemini-3.1-pro")
+#
+#   result = generate_chain(model, contact, config)
+#   humanized = humanize(model, msg["text"], language)
+#
+#
+# СТАЛО (Claude):
+#
+#   import anthropic
+#   client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+#
+#   result = generate_chain(client, contact, config)
+#   humanized = humanize(client, msg["text"], language)
+#
+#
+# В .env поменять:
+#   GEMINI_API_KEY="..."  ->  ANTHROPIC_API_KEY="sk-ant-..."
+#
+# Установить зависимость:
+#   pip install anthropic
+#
+# Удалить зависимость (опционально):
+#   pip uninstall google-generativeai

@@ -24,34 +24,6 @@ st.set_page_config(
 )
 
 
-class ClaudeModel:
-    """Простая обёртка над Anthropic Claude с интерфейсом generate_content()."""
-
-    def __init__(self, client: Anthropic, model_name: str = "claude-sonnet-4-6"):
-        self.client = client
-        self.model_name = model_name
-
-    def generate_content(self, prompt: str):
-        msg = self.client.messages.create(
-            model=self.model_name,
-            max_tokens=4096,
-            messages=[{"role": "user", "content": prompt}],
-        )
-        parts = []
-        for block in getattr(msg, "content", []) or []:
-            text = getattr(block, "text", None)
-            if text:
-                parts.append(text)
-        text = "\n".join(parts) if parts else ""
-
-        class Response:
-            pass
-
-        resp = Response()
-        resp.text = text
-        return resp
-
-
 # ─── Load API key ────────────────────────────────────
 @st.cache_data
 def get_api_key() -> str:
@@ -94,7 +66,7 @@ def load_config(client_name: str) -> dict:
 
 
 # ─── Process single contact ──────────────────────────
-def process_contact(model, row, dynamic_cols: list, config: dict, delay: float, progress_bar=None) -> dict:
+def process_contact(client, row, dynamic_cols: list, config: dict, delay: float, progress_bar=None) -> dict:
     """Process one contact and return result."""
     csv_mapping = config.get("csv_mapping", {})
     language = config.get("language", "english")
@@ -117,7 +89,7 @@ def process_contact(model, row, dynamic_cols: list, config: dict, delay: float, 
 
     # Step 1: Generate raw chain
     try:
-        chain = generate_chain(model, contact, config)
+        chain = generate_chain(client, contact, config)
     except Exception as e:
         if progress_bar:
             progress_bar.text(f"❌ Error generating: {e}")
@@ -132,7 +104,7 @@ def process_contact(model, row, dynamic_cols: list, config: dict, delay: float, 
         if progress_bar:
             progress_bar.text(f"{status_text} | Humanizing message {step}...")
         try:
-            human_text = humanize(model, msg["text"], language)
+            human_text = humanize(client, msg["text"], language)
         except Exception as e:
             if progress_bar:
                 progress_bar.text(f"❌ Error humanizing step {step}: {e}")
@@ -196,7 +168,6 @@ def main():
         # Initialize API
         api_key = get_api_key()
         client = Anthropic(api_key=api_key)
-        model = ClaudeModel(client, model_name="claude-sonnet-4-6")
 
         # Load contacts
         try:
@@ -227,7 +198,7 @@ def main():
                     status_text.text(f"Processing contact {idx + 1}/{total}...")
                     progress_bar.progress((idx + 1) / total)
 
-                    result = process_contact(model, row, dynamic_cols, config, delay, status_text)
+                    result = process_contact(client, row, dynamic_cols, config, delay, status_text)
                     rows = flatten_result(row, result, config.get("csv_mapping", {}))
                     all_rows.extend(rows)
 
