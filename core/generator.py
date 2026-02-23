@@ -52,8 +52,11 @@ OUTREACH_TOOL = {
 
 GENERATION_PROMPT = """You are an expert B2B sales strategist working for {company_name}.
 
-Your task: Write a {num_messages}-message cold outreach sequence for Telegram for the contact below.
+Your task: Write a {num_messages}-message cold outreach sequence for {platform} for the contact below.
 Goal: {goal}
+
+=== PLATFORM: {platform_upper} ===
+{platform_guidelines}
 
 === ABOUT {company_name} ===
 {company_context}
@@ -84,7 +87,7 @@ Design a smart funnel tailored SPECIFICALLY to this person and their company con
 You decide the angles and escalation logic based on the intelligence provided."""
 
 
-def generate_chain(client: anthropic.Anthropic, contact: dict, config: dict) -> dict:
+def generate_chain(client: anthropic.Anthropic, contact: dict, config: dict, platform: str = "LinkedIn") -> dict:
     """
     Генерирует сырую цепочку сообщений для одного контакта.
 
@@ -92,6 +95,7 @@ def generate_chain(client: anthropic.Anthropic, contact: dict, config: dict) -> 
         client: инстанс anthropic.Anthropic
         contact: данные контакта из CSV
         config: конфиг клиента из YAML
+        platform: "LinkedIn" или "Email"
 
     Returns:
         dict с ключами 'strategy_rationale' и 'messages'
@@ -100,10 +104,37 @@ def generate_chain(client: anthropic.Anthropic, contact: dict, config: dict) -> 
     timing = funnel.get("timing", ["Day 1", "Day 3", "Day 6", "Day 10", "Day 14"])
     timing_str = "\n".join([f"  - Message {i+1}: {t}" for i, t in enumerate(timing)])
 
+    # Выбираем guidelines для платформы
+    platform = platform.lower()
+    if platform == "linkedin":
+        platform_guidelines = """- LinkedIn messages are professional but conversational
+- Keep messages concise (2-4 sentences for first messages)
+- Use LinkedIn's connection request + follow-up sequence format
+- Reference mutual connections, company updates, or industry insights when relevant
+- Professional tone but approachable
+- Can reference their LinkedIn activity or profile
+- Include a clear but soft CTA"""
+        platform_upper = "LINKEDIN"
+    elif platform == "email":
+        platform_guidelines = """- Email outreach is more formal than LinkedIn but still personal
+- Subject lines matter - make them compelling and relevant
+- First email should be short (3-5 sentences max)
+- Professional but warm tone
+- Can include more detail than LinkedIn
+- Clear value proposition
+- Include a soft CTA with low commitment ask"""
+        platform_upper = "EMAIL"
+    else:
+        platform_guidelines = "- Professional outreach messages"
+        platform_upper = platform.upper()
+
     prompt = GENERATION_PROMPT.format(
         company_name=config.get("company_name", "Our Company"),
         num_messages=funnel.get("num_messages", 5),
         goal=funnel.get("goal", "Get a reply or book a call"),
+        platform=platform.capitalize(),
+        platform_upper=platform_upper,
+        platform_guidelines=platform_guidelines,
         company_context=config.get("company_context", ""),
         person_name=contact.get("person_name", ""),
         title=contact.get("title", ""),

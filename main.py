@@ -66,7 +66,7 @@ def load_config(client_name: str) -> dict:
 
 
 # ─── Process single contact ──────────────────────────
-def process_contact(client, row, dynamic_cols: list, config: dict, delay: float) -> dict:
+def process_contact(client, row, dynamic_cols: list, config: dict, delay: float, platform: str = "LinkedIn") -> dict:
     csv_mapping = config.get("csv_mapping", {})
     language    = config.get("language", "english")
 
@@ -86,7 +86,7 @@ def process_contact(client, row, dynamic_cols: list, config: dict, delay: float)
 
     # Step 1: Generate raw chain
     try:
-        chain = generate_chain(client, contact, config)
+        chain = generate_chain(client, contact, config, platform)
     except Exception as e:
         print(f"     ERROR generating: {e}")
         return {"error": str(e), "messages": []}
@@ -99,7 +99,7 @@ def process_contact(client, row, dynamic_cols: list, config: dict, delay: float)
         step = msg.get("step", "?")
         print(f"     Humanizing message {step}...")
         try:
-            human_text = humanize(client, msg["text"], language)
+            human_text = humanize(client, msg["text"], language, platform)
         except Exception as e:
             print(f"     ERROR humanizing step {step}: {e}")
             human_text = msg["text"]
@@ -126,6 +126,7 @@ def main():
     parser.add_argument("--input",  required=True,  help="Path to input CSV")
     parser.add_argument("--output", default=None,   help="Path to output CSV")
     parser.add_argument("--delay",  type=float, default=4.0)
+    parser.add_argument("--platform", default="LinkedIn", choices=["LinkedIn", "Email"], help="Platform: LinkedIn or Email")
     args = parser.parse_args()
 
     output_path = args.output or f"results_{args.client}_{datetime.now().strftime('%Y%m%d_%H%M')}.csv"
@@ -141,7 +142,8 @@ def main():
 
     api_key = get_api_key()
     client = Anthropic(api_key=api_key)
-    print(f"  Model: Claude Sonnet 4.6\n")
+    print(f"  Model: Claude Sonnet 4.6")
+    print(f"  Platform: {args.platform}\n")
 
     # Load contacts
     df, dynamic_cols = load_contacts(args.input, config)
@@ -152,7 +154,7 @@ def main():
 
     for idx, row in df.iterrows():
         print(f"\n[{idx + 1}/{total}]")
-        result  = process_contact(client, row, dynamic_cols, config, args.delay)
+        result  = process_contact(client, row, dynamic_cols, config, args.delay, args.platform)
         rows    = flatten_result(row, result, config.get("csv_mapping", {}))
         all_rows.extend(rows)
         print(f"     Done: {len(result.get('messages', []))} messages")

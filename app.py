@@ -66,7 +66,7 @@ def load_config(client_name: str) -> dict:
 
 
 # ─── Process single contact ──────────────────────────
-def process_contact(client, row, dynamic_cols: list, config: dict, delay: float, progress_bar=None) -> dict:
+def process_contact(client, row, dynamic_cols: list, config: dict, delay: float, platform: str = "LinkedIn", progress_bar=None) -> dict:
     """Process one contact and return result."""
     csv_mapping = config.get("csv_mapping", {})
     language = config.get("language", "english")
@@ -89,7 +89,7 @@ def process_contact(client, row, dynamic_cols: list, config: dict, delay: float,
 
     # Step 1: Generate raw chain
     try:
-        chain = generate_chain(client, contact, config)
+        chain = generate_chain(client, contact, config, platform)
     except Exception as e:
         if progress_bar:
             progress_bar.text(f"❌ Error generating: {e}")
@@ -104,7 +104,7 @@ def process_contact(client, row, dynamic_cols: list, config: dict, delay: float,
         if progress_bar:
             progress_bar.text(f"{status_text} | Humanizing message {step}...")
         try:
-            human_text = humanize(client, msg["text"], language)
+            human_text = humanize(client, msg["text"], language, platform)
         except Exception as e:
             if progress_bar:
                 progress_bar.text(f"❌ Error humanizing step {step}: {e}")
@@ -147,6 +147,11 @@ def main():
         
         # Settings
         st.header("Settings")
+        platform = st.radio(
+            "Platform",
+            ["LinkedIn", "Email"],
+            help="Select the platform for message generation"
+        )
         delay = st.slider("Delay between API calls (seconds)", 1.0, 10.0, 4.0, 0.5)
         
         st.markdown("---")
@@ -198,7 +203,7 @@ def main():
                     status_text.text(f"Processing contact {idx + 1}/{total}...")
                     progress_bar.progress((idx + 1) / total)
 
-                    result = process_contact(client, row, dynamic_cols, config, delay, status_text)
+                    result = process_contact(client, row, dynamic_cols, config, delay, platform, status_text)
                     rows = flatten_result(row, result, config.get("csv_mapping", {}))
                     all_rows.extend(rows)
 
