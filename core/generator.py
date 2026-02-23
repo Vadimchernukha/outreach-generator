@@ -1,8 +1,7 @@
 """
-generator.py — генерация цепочки сообщений через Gemini
+generator.py — генерация цепочки сообщений через LLM (Claude, etc.)
 """
 import json
-import google.generativeai as genai
 
 GENERATION_PROMPT = """
 You are an expert B2B sales strategist working for {company_name}.

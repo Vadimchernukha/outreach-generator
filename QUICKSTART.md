@@ -10,10 +10,10 @@
 # Установите API ключ (выберите один способ):
 
 # Способ 1: Переменная окружения PowerShell
-$env:GEMINI_API_KEY="ваш_ключ_от_aistudio.google.com"
+$env:ANTHROPIC_API_KEY="ваш_ключ_от_console.anthropic.com"
 
 # Способ 2: Создайте файл .env в корне проекта
-# GEMINI_API_KEY=ваш_ключ_от_aistudio.google.com
+# ANTHROPIC_API_KEY=ваш_ключ_от_console.anthropic.com
 
 # Запуск Streamlit приложения
 streamlit run app.py
@@ -44,7 +44,7 @@ streamlit run app.py
    - В настройках приложения: **Settings → Secrets**
    - Добавьте:
    ```toml
-   GEMINI_API_KEY = "ваш_ключ_от_aistudio.google.com"
+   ANTHROPIC_API_KEY = "ваш_ключ_от_console.anthropic.com"
    ```
 
 4. **Готово!** Приложение будет доступно по ссылке вида:

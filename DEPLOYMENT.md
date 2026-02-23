@@ -18,7 +18,7 @@
    - В настройках приложения: Settings → Secrets
    - Добавьте:
    ```toml
-   GEMINI_API_KEY = "ваш_ключ_от_aistudio.google.com"
+   ANTHROPIC_API_KEY = "ваш_ключ_от_console.anthropic.com"
    ```
 
 4. **Готово!** Приложение будет доступно по ссылке вида:
@@ -32,12 +32,12 @@ pip install -r requirements.txt
 
 # Настройка API ключа (выберите один способ):
 # Способ 1: Создайте .env файл
-echo GEMINI_API_KEY=ваш_ключ > .env
+echo ANTHROPIC_API_KEY=ваш_ключ > .env
 
 # Способ 2: Переменная окружения
-export GEMINI_API_KEY=ваш_ключ  # Linux/Mac
-set GEMINI_API_KEY=ваш_ключ     # Windows CMD
-$env:GEMINI_API_KEY="ваш_ключ"  # Windows PowerShell
+export ANTHROPIC_API_KEY=ваш_ключ  # Linux/Mac
+set ANTHROPIC_API_KEY=ваш_ключ     # Windows CMD
+$env:ANTHROPIC_API_KEY="ваш_ключ"  # Windows PowerShell
 
 # Способ 3: Streamlit secrets (для локального тестирования)
 # Скопируйте .streamlit/secrets.toml.example в .streamlit/secrets.toml
@@ -66,5 +66,5 @@ outreach-generator/
 
 - **API ключ:** Никогда не коммитьте `.env` или `.streamlit/secrets.toml` в Git
 - **Файлы:** Временные CSV файлы создаются и удаляются автоматически
-- **Лимиты:** Учитывайте лимиты API Gemini при обработке больших объемов
+- **Лимиты:** Учитывайте лимиты API Anthropic при обработке больших объемов
 - **Задержки:** Настройте delay в интерфейсе для соблюдения rate limits

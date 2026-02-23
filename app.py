@@ -7,8 +7,9 @@ import time
 import yaml
 import pandas as pd
 import streamlit as st
-import google.generativeai as genai
 from datetime import datetime
+
+from anthropic import Anthropic
 
 from core.csv_handler import load_contacts, get_field, build_dynamic_text, save_results, flatten_result
 from core.generator import generate_chain
@@ -23,18 +24,46 @@ st.set_page_config(
 )
 
 
+class ClaudeModel:
+    """Простая обёртка над Anthropic Claude с интерфейсом generate_content()."""
+
+    def __init__(self, client: Anthropic, model_name: str = "claude-sonnet-4-6"):
+        self.client = client
+        self.model_name = model_name
+
+    def generate_content(self, prompt: str):
+        msg = self.client.messages.create(
+            model=self.model_name,
+            max_tokens=4096,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        parts = []
+        for block in getattr(msg, "content", []) or []:
+            text = getattr(block, "text", None)
+            if text:
+                parts.append(text)
+        text = "\n".join(parts) if parts else ""
+
+        class Response:
+            pass
+
+        resp = Response()
+        resp.text = text
+        return resp
+
+
 # ─── Load API key ────────────────────────────────────
 @st.cache_data
 def get_api_key() -> str:
-    """Get Gemini API key from environment or secrets."""
+    """Get Anthropic API key from environment or secrets."""
     # Try Streamlit secrets first (for cloud deployment)
-    if hasattr(st, "secrets") and "GEMINI_API_KEY" in st.secrets:
-        return st.secrets["GEMINI_API_KEY"]
-    
+    if hasattr(st, "secrets") and "ANTHROPIC_API_KEY" in st.secrets:
+        return st.secrets["ANTHROPIC_API_KEY"]
+
     # Try environment variable
-    key = os.environ.get("GEMINI_API_KEY", "")
+    key = os.environ.get("ANTHROPIC_API_KEY", "")
     if not key:
-        st.error("❌ GEMINI_API_KEY not found. Please set it in Streamlit secrets or environment variables.")
+        st.error("❌ ANTHROPIC_API_KEY not found. Please set it in Streamlit secrets or environment variables.")
         st.stop()
     return key
 
@@ -127,7 +156,7 @@ def process_contact(model, row, dynamic_cols: list, config: dict, delay: float, 
 # ─── Main UI ──────────────────────────────────────────
 def main():
     st.title("📧 AI Cold Outreach Generator")
-    st.markdown("Powered by Google Gemini 3.1 Pro")
+    st.markdown("Powered by Claude Sonnet 4.6")
 
     # Sidebar
     with st.sidebar:
@@ -166,8 +195,8 @@ def main():
     if uploaded_file is not None:
         # Initialize API
         api_key = get_api_key()
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel("gemini-3.1-pro-preview")
+        client = Anthropic(api_key=api_key)
+        model = ClaudeModel(client, model_name="claude-sonnet-4-6")
 
         # Load contacts
         try:
@@ -175,45 +204,45 @@ def main():
             temp_path = f"temp_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
             with open(temp_path, "wb") as f:
                 f.write(uploaded_file.getbuffer())
-            
+
             df, dynamic_cols = load_contacts(temp_path, config)
-            
+
             st.success(f"✅ Loaded {len(df)} contacts")
             st.info(f"Dynamic columns ({len(dynamic_cols)}): {', '.join(dynamic_cols[:5])}{'...' if len(dynamic_cols) > 5 else ''}")
-            
+
             # Show preview
             with st.expander("📋 Preview contacts"):
                 st.dataframe(df.head(10), use_container_width=True)
-            
+
             # Process button
             if st.button("🚀 Generate Outreach Messages", type="primary", use_container_width=True):
                 # Process all contacts
                 all_rows = []
                 total = len(df)
-                
+
                 progress_bar = st.progress(0)
                 status_text = st.empty()
-                
+
                 for idx, row in df.iterrows():
                     status_text.text(f"Processing contact {idx + 1}/{total}...")
                     progress_bar.progress((idx + 1) / total)
-                    
+
                     result = process_contact(model, row, dynamic_cols, config, delay, status_text)
                     rows = flatten_result(row, result, config.get("csv_mapping", {}))
                     all_rows.extend(rows)
-                    
+
                     time.sleep(delay)
-                
+
                 progress_bar.empty()
                 status_text.empty()
-                
+
                 # Save results
                 output_filename = f"results_{client_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
                 save_results(all_rows, output_filename)
-                
+
                 st.success(f"✅ Processing complete!")
                 st.info(f"**Contacts processed:** {total}\n\n**Total message rows:** {len(all_rows)}")
-                
+
                 # Download button
                 with open(output_filename, "rb") as f:
                     st.download_button(
@@ -221,30 +250,30 @@ def main():
                         data=f.read(),
                         file_name=output_filename,
                         mime="text/csv",
-                        use_container_width=True
+                        use_container_width=True,
                     )
-                
+
                 # Show results preview
                 with st.expander("📊 Preview Results"):
                     results_df = pd.DataFrame(all_rows)
                     st.dataframe(results_df.head(20), use_container_width=True)
-                
+
                 # Cleanup
                 if os.path.exists(temp_path):
                     os.remove(temp_path)
                 if os.path.exists(output_filename):
                     # Keep file for download, but note it will be cleaned up on next run
                     pass
-            
+
         except Exception as e:
             st.error(f"❌ Error: {e}")
             st.exception(e)
         finally:
             # Cleanup temp file if exists
-            if 'temp_path' in locals() and os.path.exists(temp_path):
+            if "temp_path" in locals() and os.path.exists(temp_path):
                 try:
                     os.remove(temp_path)
-                except:
+                except Exception:
                     pass
 
 

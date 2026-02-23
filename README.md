@@ -1,7 +1,7 @@
 # AI Cold Outreach Generator
 
 Генерирует персонализированные цепочки из 5 Telegram-сообщений для каждого контакта.
-Использует Google Gemini 3.1 Pro. Поддерживает любое количество клиентов.
+Использует Anthropic Claude Sonnet 4.6. Поддерживает любое количество клиентов.
 
 ## Структура проекта
 
@@ -21,13 +21,13 @@ outreach-generator/
 ## Установка
 
 ```bash
-pip install google-generativeai pandas openpyxl pyyaml
+pip install anthropic pandas openpyxl pyyaml
 ```
 
 ## Настройка API ключа
 
 ```bash
-export GEMINI_API_KEY="твой_ключ_от_aistudio.google.com"
+export ANTHROPIC_API_KEY="твой_ключ_от_console.anthropic.com"
 ```
 
 ## Запуск

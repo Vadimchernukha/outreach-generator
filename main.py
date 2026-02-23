@@ -1,7 +1,7 @@
 """
 ╔══════════════════════════════════════════════════════════╗
 ║         AI Cold Outreach Generator                      ║
-║         Powered by Google Gemini 3.1 Pro                ║
+║         Powered by Claude Sonnet 4.6                    ║
 ╚══════════════════════════════════════════════════════════╝
 
 USAGE:
@@ -13,8 +13,8 @@ USAGE:
   --delay    Seconds between API calls (default: 4)
 
 SETUP:
-  1. pip install google-generativeai pandas pyyaml openpyxl
-  2. Copy .env.example to .env and add your Gemini API key
+  1. pip install anthropic pandas pyyaml openpyxl
+  2. Copy .env.example to .env and add your Anthropic API key
   3. Create/edit your client config in clients/
   4. Run!
 """
@@ -24,12 +24,42 @@ import sys
 import time
 import argparse
 import yaml
-import google.generativeai as genai
 from datetime import datetime
+
+from anthropic import Anthropic
 
 from core.csv_handler import load_contacts, get_field, build_dynamic_text, save_results, flatten_result
 from core.generator  import generate_chain
 from core.humanizer  import humanize
+
+
+class ClaudeModel:
+    """Простая обёртка над Anthropic Claude с интерфейсом generate_content()."""
+
+    def __init__(self, client: Anthropic, model_name: str = "claude-sonnet-4-6"):
+        self.client = client
+        self.model_name = model_name
+
+    def generate_content(self, prompt: str):
+        msg = self.client.messages.create(
+            model=self.model_name,
+            max_tokens=4096,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        # Собираем весь текст из контента
+        parts = []
+        for block in getattr(msg, "content", []) or []:
+            text = getattr(block, "text", None)
+            if text:
+                parts.append(text)
+        text = "\n".join(parts) if parts else ""
+
+        class Response:
+            pass
+
+        resp = Response()
+        resp.text = text
+        return resp
 
 
 # ─── Load API key ────────────────────────────────────
@@ -40,14 +70,14 @@ def get_api_key() -> str:
         with open(env_path) as f:
             for line in f:
                 line = line.strip()
-                if line.startswith("GEMINI_API_KEY"):
+                if line.startswith("ANTHROPIC_API_KEY"):
                     return line.split("=", 1)[1].strip().strip('"').strip("'")
     # Fallback to environment variable
-    key = os.environ.get("GEMINI_API_KEY", "")
+    key = os.environ.get("ANTHROPIC_API_KEY", "")
     if not key:
-        print("ERROR: GEMINI_API_KEY not found.")
-        print("  Option 1: Add to .env file:  GEMINI_API_KEY=your_key")
-        print("  Option 2: export GEMINI_API_KEY=your_key")
+        print("ERROR: ANTHROPIC_API_KEY not found.")
+        print("  Option 1: Add to .env file:  ANTHROPIC_API_KEY=your_key")
+        print("  Option 2: export ANTHROPIC_API_KEY=your_key")
         sys.exit(1)
     return key
 
@@ -133,15 +163,15 @@ def main():
     print(f"  OUTREACH GENERATOR  |  Client: {args.client}")
     print("=" * 60)
 
-    # Load config + init Gemini
+    # Load config + init Claude
     config = load_config(args.client)
     print(f"  Company: {config.get('company_name')}")
     print(f"  Language: {config.get('language', 'english')}")
 
     api_key = get_api_key()
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel("gemini-3.1-pro-preview")
-    print(f"  Model: Gemini 3.1 Pro Preview\n")
+    client = Anthropic(api_key=api_key)
+    model = ClaudeModel(client, model_name="claude-sonnet-4-6")
+    print(f"  Model: Claude Sonnet 4.6\n")
 
     # Load contacts
     df, dynamic_cols = load_contacts(args.input, config)
